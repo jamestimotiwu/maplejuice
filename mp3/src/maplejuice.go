@@ -199,8 +199,8 @@ func (node *SdfsNode) Maple(mapleQueueReq MapleJuiceQueueRequest) {
 			}
 		}
 	}
-	duration := time.Since(startTime)
 	node.RunTasks(mapleCh, mapleQueueReq.NumTasks)
+	duration := time.Since(startTime)
 	node.SendMessage(mapleQueueReq.RequestingId, "Finished Maple")
 	node.SendMessage(mapleQueueReq.RequestingId, "Elapsed: "+strconv.FormatFloat(float64(duration)/1000000000, 'f', 3, 64)+" s")
 }
@@ -232,13 +232,13 @@ func (node *SdfsNode) RunTaskWorker(i int, wg *sync.WaitGroup, tasks <-chan Task
 		// Find chosenIp or whatever
 		// Call RPC.Maple/Juice function here (RequestMapleOnBlock)
 		taskLock.Lock()
-		currTasks[task.Request.FileName] = task
+		currTasks[task.Request.FileName+".blk_"+fmt.Sprint(task.Request.BlockNum)] = task
 		taskLock.Unlock()
 		err := node.RequestMapleOnBlock(task.Replicas[0], task.Request)
 
 		for err != nil {
 			// keep trying until success or you run out of options
-			err = node.RescheduleTask(task.Request.FileName)
+			err = node.RescheduleTask(task.Request.FileName + ".blk_" + fmt.Sprint(task.Request.BlockNum))
 		}
 
 		taskLock.Lock()
@@ -321,6 +321,7 @@ func (node *SdfsNode) RpcMaple(req MapleRequest, reply *MapleJuiceReply) error {
 
 	cmd := exec.Command(arg0, arg1)
 	Info.Println("Executing ", arg0, arg1)
+	fmt.Println("Executing ", arg0, arg1)
 
 	output, err := cmd.Output()
 
