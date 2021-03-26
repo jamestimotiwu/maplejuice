@@ -1,4 +1,4 @@
-# Simple Distributed File System
+# MapleJuice
 ### Overview
 
 **Features**
